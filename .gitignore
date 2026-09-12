@@ -1,0 +1,24 @@
+.env
+registry/auth/htpasswd
+.idea/
+.vscode/
+*.log
+.DS_Store
+Thumbs.db
+
+# Keys and credentials
+*.pem
+*.key
+id_rsa
+id_ed25519
+id_ed25519.pub
+.ssh/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Frontend
+frontend/node_modules/

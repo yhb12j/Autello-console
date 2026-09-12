@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autéllo Barskiy — частное ателье ухода за автомобилем</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="orbs" aria-hidden="true">
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <header class="topbar" data-zone="header">
+    <div class="brand">
+      <span class="mark">A</span>
+      <div>
+        <strong>Autéllo Barskiy</strong>
+        <small>Private Auto Atelier</small>
+      </div>
+    </div>
+    <nav>
+      <a href="#atelier" data-track="nav-atelier">Ателье</a>
+      <a href="#request" data-track="nav-request">Заявка</a>
+      <a href="/admin" data-track="nav-admin">Кабинет</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" data-zone="hero">
+      <p class="eyebrow">Закрытый контур работы с тёплым запросом</p>
+      <h1>Бережный уход за автомобилем, который не ставят в общую очередь</h1>
+      <p class="lead">
+        Autéllo Barskiy принимает заявки на премиальный детейлинг, защиту кузова
+        и кабинный сервис. Вы описываете задачу, мы собираем бриф и передаём его
+        во внутренний контур. Данные остаются на нашей площадке.
+      </p>
+      <a class="cta" href="#request" data-track="hero-cta">Оставить заявку</a>
+    </section>
+
+    <section id="atelier" class="cards" data-zone="atelier">
+      <article>
+        <h3>Услуга как центр диалога</h3>
+        <p>Список работ формируется из актуальных предложений ателье и обновляется из внутренней базы.</p>
+      </article>
+      <article>
+        <h3>Бюджет ползунком</h3>
+        <p>Диапазон подстраивается под выбранную услугу, чтобы заявка сразу попадала в нужный коридор.</p>
+      </article>
+      <article>
+        <h3>Тихий контур</h3>
+        <p>Контакты, метрики сессии и комментарии уходят одним пакетом и не публикуются снаружи.</p>
+      </article>
+    </section>
+
+    <section id="request" class="panel" data-zone="form">
+      <div class="panel-head">
+        <h2>Форма заявки</h2>
+        <p>Сначала выберите услугу — остальные поля подстроятся под неё.</p>
+      </div>
+
+      <form id="lead-form" novalidate>
+        <label class="full featured">
+          Услуга ателье
+          <select id="product" name="product" required data-track="select-service">
+            <option value="" disabled selected>Загружаем список услуг…</option>
+          </select>
+        </label>
+
+        <div class="budget-box">
+          <div class="budget-head">
+            <span>Диапазон бюджета</span>
+            <strong id="budget-label">Выберите услугу</strong>
+          </div>
+          <input id="budget" name="budget" type="range" min="40000" max="280000" step="5000" value="120000" disabled>
+        </div>
+
+        <div class="grid">
+          <label>
+            Имя
+            <input name="first_name" type="text" required placeholder="Иван">
+          </label>
+          <label>
+            Фамилия
+            <input name="last_name" type="text" required placeholder="Баранов">
+          </label>
+          <label>
+            Отчество
+            <input name="patronymic" type="text" placeholder="Сергеевич">
+          </label>
+          <label>
+            Телефон
+            <input name="phone" type="tel" required placeholder="+7 999 000 00 00">
+          </label>
+          <label>
+            Email
+            <input name="email" type="email" required placeholder="name@company.com">
+          </label>
+          <label>
+            Кто вы
+            <select name="role" required data-track="select-role">
+              <option value="" disabled selected>Выберите роль</option>
+              <option value="руководитель">Руководитель</option>
+              <option value="сотрудник">Сотрудник</option>
+            </select>
+          </label>
+          <label>
+            Ниша бизнеса
+            <input name="business_niche" type="text" required placeholder="Автопарк, частный гараж, дилер">
+          </label>
+          <label>
+            Размер компании
+            <select name="company_size" required data-track="select-company">
+              <option value="" disabled selected>Выберите размер</option>
+              <option value="1-10">1–10 человек</option>
+              <option value="11-50">11–50 человек</option>
+              <option value="51-200">51–200 человек</option>
+              <option value="200+">более 200</option>
+            </select>
+          </label>
+          <label>
+            Размер бизнеса
+            <input name="business_size" type="text" required placeholder="Парк, один автомобиль, коллекция">
+          </label>
+          <label>
+            Объём задачи
+            <input name="task_volume" type="text" required placeholder="Полный кузов, салон, один элемент">
+          </label>
+          <label>
+            Объём потребности
+            <input name="need_volume" type="text" required placeholder="Разовая работа или регулярный уход">
+          </label>
+          <label>
+            Срок результата
+            <input name="deadline" type="text" required placeholder="До 20 числа, в течение месяца">
+          </label>
+          <label>
+            Тип задачи
+            <input name="task_type" type="text" required placeholder="Защита, восстановление, подготовка">
+          </label>
+          <label>
+            Способ связи
+            <select name="contact_method" required data-track="select-contact">
+              <option value="" disabled selected>Как удобнее ответить</option>
+              <option value="телефон">Телефон</option>
+              <option value="telegram">Telegram</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="email">Email</option>
+            </select>
+          </label>
+          <label>
+            Удобное время
+            <input name="convenient_time" type="text" required placeholder="Будни 11:00–16:00">
+          </label>
+        </div>
+
+        <label class="full">
+          Информация о бизнесе
+          <textarea name="business_info" rows="3" placeholder="Чем занимаетесь и какой автомобиль нужно принять"></textarea>
+        </label>
+        <label class="full">
+          Комментарий
+          <textarea name="comment" rows="4" placeholder="Цвет, состояние ЛКП, особые пожелания"></textarea>
+        </label>
+
+        <button type="submit" data-track="submit-application">Отправить заявку</button>
+        <p id="form-status" class="status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <span>Autéllo Barskiy</span>
+    <span>Заявки принимаются только через эту страницу</span>
+  </footer>
+</body>
+</html>

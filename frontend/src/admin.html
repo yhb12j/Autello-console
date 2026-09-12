@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autéllo Barskiy — кабинет настроек</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body">
+  <div class="orbs" aria-hidden="true">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark">A</span>
+      <div>
+        <strong>Кабинет ателье</strong>
+        <small>Услуги и диапазоны бюджета</small>
+      </div>
+    </div>
+    <nav>
+      <a href="/">На сайт</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Настройки витрины</h2>
+        <p>Эти записи питают выпадающий список услуг на клиентской странице.</p>
+      </div>
+      <form id="service-form">
+        <div class="grid">
+          <label>
+            Услуга
+            <input name="services" type="text" required placeholder="Керамика кузова">
+          </label>
+          <label>
+            Диапазон бюджета
+            <input name="budget_range" type="text" required placeholder="90 000 — 280 000 ₽">
+          </label>
+        </div>
+        <button type="submit">Сохранить услугу</button>
+        <p id="service-status" class="status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Текущий список</h2>
+        <p>Клиент видит все записи, а не только последнюю.</p>
+      </div>
+      <div id="service-list" class="service-list"></div>
+    </section>
+  </main>
+</body>
+</html>
