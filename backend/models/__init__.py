@@ -1,8 +1,11 @@
+from .admin import Admin, AdminCRUD
 from .admin_setting import AdminSetting, AdminSettingCRUD
 from .application import Application, ApplicationCRUD
 from .behavior_metric import BehaviorMetric, BehaviorMetricCRUD
 
 __all__ = [
+    "Admin",
+    "AdminCRUD",
     "AdminSetting",
     "AdminSettingCRUD",
     "Application",

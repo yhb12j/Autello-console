@@ -1,15 +1,12 @@
 # Autéllo Barskiy
 
-Закрытый контур приёма заявок частного автоателье: витрина, FastAPI и PostgreSQL работают в одном Docker Compose. Браузер видит только Nginx. Запись в базу идёт через backend.
+Закрытый контур приёма заявок частного автоателье. Браузер видит только Nginx на 443. Backend и PostgreSQL остаются во внутренней сети. Порты 8000 и 5432 снаружи отвечают отказом.
 
 ## Состав контура
 
-- Nginx — публичная точка входа, статика из `frontend/dist` и обратный прокси на API
-- FastAPI — заявки, метрики сессии и настройки витрины
-- PostgreSQL — хранилище, порт наружу не публикуется
-- pgAdmin — просмотр таблиц
-- Watchtower — обновление помеченных контейнеров
-- Docker Registry — приватный реестр образов
+- Nginx — HTTPS-вход, статика из `frontend/dist`, обратный прокси на API
+- FastAPI — заявки, анонимные метрики сессии, услуги и JWT-кабинет
+- PostgreSQL — хранилище без публикации рабочего порта наружу
 
 ## Требования
 
@@ -22,7 +19,11 @@
 cp .env.example .env
 ```
 
-Заполните пароли в `.env`. Если порты `80` или `8000` заняты, задайте свободные значения `NGINX_HTTP_PORT` и `BACKEND_PORT`.
+Заполните `POSTGRES_PASSWORD` и `SECRET_KEY`. Ключ можно получить так:
+
+```bash
+openssl rand -hex 32
+```
 
 ```bash
 cd frontend
@@ -31,46 +32,52 @@ npm run build
 cd ..
 
 docker compose up -d --build
-
-# Приватный реестр и Watchtower включаются отдельно:
-# cd registry && ./create-user.sh admin '<пароль>' && cd ..
-# docker compose --profile ops up -d
 ```
+
+Первый вход в кабинет создаёт единственного оператора. После этого регистрация закрывается.
 
 ## Точки доступа
 
-| Сервис        | Адрес                                      |
-|---------------|--------------------------------------------|
-| Витрина       | `http://<host>/`                           |
-| Кабинет услуг | `http://<host>/admin`                      |
-| Swagger       | `http://<host>/docs` и `http://<host>:<BACKEND_PORT>/docs` |
-| pgAdmin       | `http://<host>:<PGADMIN_PORT>/`            |
-| Registry      | `http://<host>:<REGISTRY_PORT>/v2/`        |
+| Сервис   | Адрес                    |
+|----------|--------------------------|
+| Витрина  | `https://<host>/`        |
+| Кабинет  | `https://<host>/admin`   |
+| Swagger  | `https://<host>/docs`    |
 
-Postgres доступен только по имени сервиса `db` внутри сети `internal`. Backend ходит к нему по `POSTGRES_HOST=db`.
-
-### pgAdmin
-
-1. Войдите с `PGADMIN_DEFAULT_EMAIL` и `PGADMIN_DEFAULT_PASSWORD`.
-2. Откройте сервер **Autello PostgreSQL**:
-   - Host: `db`
-   - Port: `5432`
-   - Username / Password: `POSTGRES_USER` и `POSTGRES_PASSWORD`
+Прямые обращения на `8000` и `5432` получают `403`. Если эти порты на хосте заняты, задайте `CLOSED_API_PORT` и `CLOSED_DB_PORT` в `.env`.
 
 ## API
 
-Клиентская страница вызывает API через `/api/...`. Nginx снимает префикс и передаёт запрос в backend.
+Клиент ходит в `/api/...`. Nginx снимает префикс и передаёт запрос в backend.
 
 | Метод | Путь | Назначение |
 | --- | --- | --- |
 | GET | `/health` | Проверка сервиса |
-| GET/POST | `/admin-settings` | Список и создание услуг |
-| GET/PUT/DELETE | `/admin-settings/{id}` | Карточка услуги |
-| GET/POST | `/applications` | Список и создание заявок |
-| GET/PUT/DELETE | `/applications/{id}` | Карточка заявки |
-| GET/POST | `/behavior-metrics` | Метрики сессии |
+| GET/POST | `/auth/check`, `/auth/register`, `/auth/login`, `/auth/token` | Контур входа |
+| GET | `/auth/me`, `/auth/verify` | Текущий оператор и проверка JWT |
+| GET/POST/PUT/DELETE | `/admin-settings` | Услуги витрины |
+| POST | `/applications` | Новая заявка |
+| GET | `/applications`, `/applications/queue` | Список и ранжированная очередь |
+| POST | `/behavior-metrics` | Анонимные метрики сессии |
+| GET | `/behavior-metrics`, `/behavior-metrics/summary` | Журнал и сводка |
 
-Логи backend:
+Изменение услуг, чтение заявок и сводка метрик требуют Bearer-токен.
+
+## Схема операторов
+
+```sql
+CREATE TABLE IF NOT EXISTS admins (
+    id SERIAL PRIMARY KEY,
+    login VARCHAR(80) NOT NULL UNIQUE,
+    email VARCHAR(180),
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+Тестовые заявки: `scripts/seed-applications.sql`.
+
+## Логи
 
 ```bash
 docker logs -f backend
@@ -78,9 +85,9 @@ docker logs -f backend
 
 ## Сети
 
-- `edge` — Nginx, backend, pgAdmin, Registry
-- `internal` — PostgreSQL и служебный трафик между backend и `db`
+- `edge` — Nginx
+- `internal` — backend и `db`
 
 ## Сборка витрины
 
-Исходники лежат в `frontend/src`. Сборка пишет HTML, JS и CSS в `frontend/dist`. Стили выносятся через `mini-css-extract-plugin`, Nginx отдаёт их как статику с корня сайта.
+Исходники лежат в `frontend/src`. Сборка пишет HTML, JS и CSS в `frontend/dist`.

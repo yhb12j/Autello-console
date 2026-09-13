@@ -1,6 +1,6 @@
 import "./styles.css";
 import { api, formatMoney, parseBudgetRange } from "./api";
-import { collectBehavior, initMetrics } from "./metrics";
+import { startBehaviorMetrics } from "./behavior-metrics";
 
 const form = document.getElementById("lead-form");
 const statusNode = document.getElementById("form-status");
@@ -103,7 +103,6 @@ form.addEventListener("submit", async (event) => {
     contact_method: String(data.get("contact_method") || "").trim(),
     convenient_time: String(data.get("convenient_time") || "").trim(),
     comment: String(data.get("comment") || "").trim(),
-    behavior: collectBehavior(),
   };
 
   try {
@@ -121,5 +120,5 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
-initMetrics();
+startBehaviorMetrics();
 loadServices();

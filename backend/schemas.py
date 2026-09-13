@@ -1,6 +1,33 @@
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
+
+
+class AdminRegister(BaseModel):
+    login: str = Field(..., min_length=3, max_length=80)
+    password: str = Field(..., min_length=6, max_length=128)
+    email: EmailStr | None = None
+
+
+class AdminLogin(BaseModel):
+    login: str
+    password: str
+
+
+class TokenOut(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
+class AdminOut(BaseModel):
+    id: int
+    login: str
+    email: str | None = None
+    created_at: str
+
+
+class AuthCheckOut(BaseModel):
+    exists: bool
 
 
 class AdminSettingCreate(BaseModel):
@@ -23,14 +50,6 @@ class AdminSettingOut(BaseModel):
     updated_at: str
 
 
-class BehaviorPayload(BaseModel):
-    time_on_page_seconds: int = 0
-    buttons_clicked: list[Any] = Field(default_factory=list)
-    hover_zones: list[Any] = Field(default_factory=list)
-    return_count: int = 1
-    extra_payload: dict[str, Any] = Field(default_factory=dict)
-
-
 class ApplicationCreate(BaseModel):
     first_name: str = Field(..., min_length=1, max_length=120)
     last_name: str = Field(..., min_length=1, max_length=120)
@@ -51,7 +70,7 @@ class ApplicationCreate(BaseModel):
     contact_method: str = ""
     convenient_time: str = ""
     comment: str = ""
-    behavior: BehaviorPayload | None = None
+    behavior: dict[str, Any] | None = None
 
 
 class ApplicationUpdate(BaseModel):
@@ -102,23 +121,30 @@ class ApplicationOut(BaseModel):
     created_at: str
 
 
+class ApplicationQueueItem(ApplicationOut):
+    score: int
+    temperature: str
+    temperature_label: str
+    need_manager: bool
+    department: str
+    analysis: str
+
+
 class BehaviorMetricCreate(BaseModel):
-    application_id: int
-    time_on_page_seconds: int = 0
-    buttons_clicked: list[Any] = Field(default_factory=list)
-    hover_zones: list[Any] = Field(default_factory=list)
-    return_count: int = 1
-    extra_payload: dict[str, Any] = Field(default_factory=dict)
+    application_id: int | None = 0
+    time_on_page: int = 0
+    buttons_clicked: Any = ""
+    cursor_positions: Any = ""
+    return_frequency: int = 0
+    time_on_page_seconds: int | None = None
+    hover_zones: Any = None
+    extra_payload: Any = None
 
 
 class BehaviorMetricOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
     id: int
-    application_id: int
-    time_on_page_seconds: int
-    buttons_clicked: list[Any]
-    hover_zones: list[Any]
-    return_count: int
-    extra_payload: dict[str, Any]
+    time_on_page: int
+    buttons_clicked: str
+    cursor_positions: str
+    return_frequency: int
     created_at: str

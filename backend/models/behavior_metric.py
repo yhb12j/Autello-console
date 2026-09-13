@@ -1,16 +1,14 @@
-from core.database import as_json, serialize_row
+from core.database import serialize_row
 
 
 class BehaviorMetric:
     """
     CREATE TABLE IF NOT EXISTS behavior_metrics (
         id SERIAL PRIMARY KEY,
-        application_id INTEGER NOT NULL UNIQUE REFERENCES applications(id) ON DELETE CASCADE,
-        time_on_page_seconds INTEGER NOT NULL DEFAULT 0,
-        buttons_clicked JSONB NOT NULL DEFAULT '[]'::jsonb,
-        hover_zones JSONB NOT NULL DEFAULT '[]'::jsonb,
-        return_count INTEGER NOT NULL DEFAULT 1,
-        extra_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+        time_on_page INTEGER NOT NULL DEFAULT 0,
+        buttons_clicked TEXT NOT NULL DEFAULT '',
+        cursor_positions TEXT NOT NULL DEFAULT '',
+        return_frequency INTEGER NOT NULL DEFAULT 0,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
     """
@@ -18,38 +16,42 @@ class BehaviorMetric:
     CREATE_SQL = """
     CREATE TABLE IF NOT EXISTS behavior_metrics (
         id SERIAL PRIMARY KEY,
-        application_id INTEGER NOT NULL UNIQUE REFERENCES applications(id) ON DELETE CASCADE,
-        time_on_page_seconds INTEGER NOT NULL DEFAULT 0,
-        buttons_clicked JSONB NOT NULL DEFAULT '[]'::jsonb,
-        hover_zones JSONB NOT NULL DEFAULT '[]'::jsonb,
-        return_count INTEGER NOT NULL DEFAULT 1,
-        extra_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+        time_on_page INTEGER NOT NULL DEFAULT 0,
+        buttons_clicked TEXT NOT NULL DEFAULT '',
+        cursor_positions TEXT NOT NULL DEFAULT '',
+        return_frequency INTEGER NOT NULL DEFAULT 0,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+    """
+
+    MIGRATE_SQL = """
+    ALTER TABLE behavior_metrics DROP CONSTRAINT IF EXISTS behavior_metrics_application_id_fkey;
+    ALTER TABLE behavior_metrics DROP CONSTRAINT IF EXISTS behavior_metrics_application_id_key;
+    ALTER TABLE behavior_metrics ADD COLUMN IF NOT EXISTS time_on_page INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE behavior_metrics ADD COLUMN IF NOT EXISTS cursor_positions TEXT NOT NULL DEFAULT '';
+    ALTER TABLE behavior_metrics ADD COLUMN IF NOT EXISTS return_frequency INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE behavior_metrics ALTER COLUMN buttons_clicked DROP DEFAULT;
+    ALTER TABLE behavior_metrics ALTER COLUMN buttons_clicked TYPE TEXT USING COALESCE(buttons_clicked::text, '');
+    ALTER TABLE behavior_metrics ALTER COLUMN buttons_clicked SET DEFAULT '';
+    ALTER TABLE behavior_metrics ALTER COLUMN application_id DROP NOT NULL;
+    ALTER TABLE behavior_metrics ALTER COLUMN application_id SET DEFAULT 0;
     """
 
 
 class BehaviorMetricCRUD:
     @staticmethod
-    def list_all(conn):
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM behavior_metrics ORDER BY id DESC")
-            return [serialize_row(row) for row in cursor.fetchall()]
-
-    @staticmethod
-    def get_by_id(conn, item_id: int):
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM behavior_metrics WHERE id = %s", (item_id,))
-            return serialize_row(cursor.fetchone())
-
-    @staticmethod
-    def get_by_application_id(conn, application_id: int):
+    def list_all(conn, skip: int = 0, limit: int = 100):
         with conn.cursor() as cursor:
             cursor.execute(
-                "SELECT * FROM behavior_metrics WHERE application_id = %s",
-                (application_id,),
+                """
+                SELECT id, time_on_page, buttons_clicked, cursor_positions, return_frequency, created_at
+                FROM behavior_metrics
+                ORDER BY id DESC
+                OFFSET %s LIMIT %s
+                """,
+                (skip, limit),
             )
-            return serialize_row(cursor.fetchone())
+            return [serialize_row(row) for row in cursor.fetchall()]
 
     @staticmethod
     def create(conn, data: dict):
@@ -57,57 +59,48 @@ class BehaviorMetricCRUD:
             cursor.execute(
                 """
                 INSERT INTO behavior_metrics (
-                    application_id,
-                    time_on_page_seconds,
+                    time_on_page,
                     buttons_clicked,
-                    hover_zones,
-                    return_count,
-                    extra_payload
+                    cursor_positions,
+                    return_frequency
                 )
-                VALUES (%s, %s, %s, %s, %s, %s)
-                RETURNING *
+                VALUES (%s, %s, %s, %s)
+                RETURNING id, time_on_page, buttons_clicked, cursor_positions, return_frequency, created_at
                 """,
                 (
-                    data["application_id"],
-                    int(data.get("time_on_page_seconds") or 0),
-                    as_json(data.get("buttons_clicked") or []),
-                    as_json(data.get("hover_zones") or []),
-                    int(data.get("return_count") or 1),
-                    as_json(data.get("extra_payload") or {}),
+                    int(data.get("time_on_page") or 0),
+                    str(data.get("buttons_clicked") or ""),
+                    str(data.get("cursor_positions") or ""),
+                    int(data.get("return_frequency") or 0),
                 ),
             )
             return serialize_row(cursor.fetchone())
 
     @staticmethod
-    def update(conn, item_id: int, data: dict):
-        current = BehaviorMetricCRUD.get_by_id(conn, item_id)
-        if current is None:
-            return None
+    def summary(conn):
         with conn.cursor() as cursor:
             cursor.execute(
                 """
-                UPDATE behavior_metrics
-                SET time_on_page_seconds = %s,
-                    buttons_clicked = %s,
-                    hover_zones = %s,
-                    return_count = %s,
-                    extra_payload = %s
-                WHERE id = %s
-                RETURNING *
-                """,
-                (
-                    int(data.get("time_on_page_seconds", current["time_on_page_seconds"]) or 0),
-                    as_json(data.get("buttons_clicked", current["buttons_clicked"]) or []),
-                    as_json(data.get("hover_zones", current["hover_zones"]) or []),
-                    int(data.get("return_count", current["return_count"]) or 1),
-                    as_json(data.get("extra_payload", current["extra_payload"]) or {}),
-                    item_id,
-                ),
+                SELECT
+                    COALESCE(AVG(time_on_page) FILTER (WHERE created_at >= NOW() - INTERVAL '1 day'), 0) AS avg_day,
+                    COALESCE(MAX(time_on_page) FILTER (WHERE created_at >= NOW() - INTERVAL '1 day'), 0) AS max_day,
+                    COALESCE(AVG(time_on_page) FILTER (WHERE created_at >= NOW() - INTERVAL '7 day'), 0) AS avg_week,
+                    COALESCE(MAX(time_on_page) FILTER (WHERE created_at >= NOW() - INTERVAL '7 day'), 0) AS max_week,
+                    COALESCE(AVG(time_on_page) FILTER (WHERE created_at >= NOW() - INTERVAL '30 day'), 0) AS avg_month,
+                    COALESCE(MAX(time_on_page) FILTER (WHERE created_at >= NOW() - INTERVAL '30 day'), 0) AS max_month,
+                    COUNT(*) AS total
+                FROM behavior_metrics
+                """
             )
-            return serialize_row(cursor.fetchone())
-
-    @staticmethod
-    def delete(conn, item_id: int) -> bool:
-        with conn.cursor() as cursor:
-            cursor.execute("DELETE FROM behavior_metrics WHERE id = %s", (item_id,))
-            return cursor.rowcount > 0
+            row = serialize_row(cursor.fetchone()) or {}
+            cursor.execute(
+                """
+                SELECT cursor_positions
+                FROM behavior_metrics
+                WHERE cursor_positions <> ''
+                ORDER BY id DESC
+                LIMIT 400
+                """
+            )
+            points = [item["cursor_positions"] for item in cursor.fetchall()]
+        return {**row, "cursor_samples": points}

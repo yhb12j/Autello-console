@@ -11,6 +11,8 @@
 
 * { box-sizing: border-box; }
 
+[hidden] { display: none !important; }
+
 html, body {
   margin: 0;
   min-height: 100%;
@@ -265,8 +267,132 @@ footer {
   font-size: 13px;
 }
 
+.auth-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
+}
+
+.auth-card, .modal-card {
+  width: min(460px, 100%);
+  background: #fff;
+  border-radius: 28px;
+  padding: 32px;
+  box-shadow: var(--shadow);
+}
+
+.auth-actions, .inline-form, .row, .tools {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.console main {
+  display: grid;
+  gap: 24px;
+  padding-bottom: 48px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.data-table th, .data-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.data-table input {
+  margin-top: 0;
+}
+
+.inline-form {
+  margin-top: 16px;
+}
+
+.inline-form input {
+  flex: 1;
+  margin-top: 0;
+}
+
+.ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid #eadfcd;
+  margin-top: 0;
+}
+
+.chip {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chip.hot { background: #fde8e4; color: #9b2c1f; }
+.chip.warm { background: #fff3d6; color: #8a5a12; }
+.chip.cold { background: #e8eef6; color: #35506b; }
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(44, 38, 30, 0.28);
+  display: grid;
+  place-items: center;
+  z-index: 20;
+  padding: 24px;
+}
+
+.modal[hidden] {
+  display: none !important;
+}
+
+.modal-card.wide { width: min(1040px, 100%); }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 16px 0 24px;
+}
+
+.stats-grid article {
+  background: #fffdf8;
+  border: 1px solid #eadfcd;
+  border-radius: 18px;
+  padding: 14px;
+}
+
+.stats-grid small {
+  display: block;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+#heatmap {
+  width: 100%;
+  border-radius: 20px;
+  background: #f7f1e6;
+}
+
+.close {
+  float: right;
+  margin-top: 0;
+}
+
 @media (max-width: 800px) {
-  .cards, .grid { grid-template-columns: 1fr; }
+  .cards, .grid, .stats-grid { grid-template-columns: 1fr; }
   footer { flex-direction: column; }
   nav { gap: 14px; }
 }

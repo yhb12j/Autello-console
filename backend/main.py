@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from core.database import init_tables, wait_for_db
-from routes import admin_settings_router, applications_router, behavior_metrics_router
+from routes import admin_settings_router, applications_router, auth_router, behavior_metrics_router
 
 
 @asynccontextmanager
@@ -16,8 +16,8 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="Autéllo Barskiy API",
-    description="Private intake contour for atelier requests and session metrics.",
-    version="1.0.0",
+    description="Private intake contour for atelier requests, metrics and operator console.",
+    version="1.1.0",
     lifespan=lifespan,
     redirect_slashes=False,
 )
@@ -30,6 +30,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router)
 app.include_router(admin_settings_router)
 app.include_router(applications_router)
 app.include_router(behavior_metrics_router)

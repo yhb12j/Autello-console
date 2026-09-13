@@ -3,60 +3,114 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Autéllo Barskiy — кабинет настроек</title>
+  <title>Autéllo Barskiy — операторский контур</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="admin-body">
-  <div class="orbs" aria-hidden="true">
-    <span></span>
-    <span></span>
-    <span></span>
+  <section id="auth-screen" class="auth-screen">
+    <div class="auth-card">
+      <p class="eyebrow">Операторский контур</p>
+      <h1>Вход в кабинет</h1>
+      <p class="lead">Доступ только по логину, паролю и JWT-токену.</p>
+      <form id="auth-form">
+        <label>Логин <input name="login" required autocomplete="username"></label>
+        <label>Пароль <input name="password" type="password" required autocomplete="current-password"></label>
+        <div class="auth-actions">
+          <button type="submit" data-mode="login">Войти</button>
+          <button type="button" id="register-btn" hidden>Зарегистрироваться</button>
+        </div>
+        <p id="auth-status" class="status" role="status"></p>
+      </form>
+    </div>
+  </section>
+
+  <div id="console" class="console" hidden>
+    <header class="topbar">
+      <div class="brand">
+        <span class="mark">A</span>
+        <div>
+          <strong>Кабинет ателье</strong>
+          <small id="admin-login-label">Оператор</small>
+        </div>
+      </div>
+      <nav>
+        <button type="button" class="ghost" id="stats-btn">Статистика пользователей</button>
+        <a href="/">На сайт</a>
+        <button type="button" class="ghost" id="logout-btn">Выйти</button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="panel">
+        <div class="panel-head row">
+          <div>
+            <h2>Услуги</h2>
+            <p>Визуальный CRUD по таблице admin_settings.</p>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Услуга</th>
+                <th>Диапазон бюджета</th>
+                <th>Обновлено</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="services-body"></tbody>
+          </table>
+        </div>
+        <form id="service-form" class="inline-form">
+          <input name="services" required placeholder="Новая услуга">
+          <input name="budget_range" required placeholder="90 000 — 280 000 ₽">
+          <button type="submit">Добавить</button>
+        </form>
+        <p id="service-status" class="status"></p>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Очередь заявок</h2>
+          <p>Срочные лиды поднимаются вверх. Температура считается по сроку, бюджету, роли и объёму.</p>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Температура</th>
+                <th>Клиент</th>
+                <th>Услуга</th>
+                <th>Бюджет</th>
+                <th>Отдел</th>
+                <th>Менеджер</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="leads-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
   </div>
 
-  <header class="topbar">
-    <div class="brand">
-      <span class="mark">A</span>
-      <div>
-        <strong>Кабинет ателье</strong>
-        <small>Услуги и диапазоны бюджета</small>
-      </div>
+  <div id="lead-modal" class="modal" hidden>
+    <div class="modal-card">
+      <button type="button" class="close" data-close="lead-modal">Закрыть</button>
+      <div id="lead-details"></div>
     </div>
-    <nav>
-      <a href="/">На сайт</a>
-    </nav>
-  </header>
+  </div>
 
-  <main>
-    <section class="panel">
-      <div class="panel-head">
-        <h2>Настройки витрины</h2>
-        <p>Эти записи питают выпадающий список услуг на клиентской странице.</p>
-      </div>
-      <form id="service-form">
-        <div class="grid">
-          <label>
-            Услуга
-            <input name="services" type="text" required placeholder="Керамика кузова">
-          </label>
-          <label>
-            Диапазон бюджета
-            <input name="budget_range" type="text" required placeholder="90 000 — 280 000 ₽">
-          </label>
-        </div>
-        <button type="submit">Сохранить услугу</button>
-        <p id="service-status" class="status" role="status" aria-live="polite"></p>
-      </form>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head">
-        <h2>Текущий список</h2>
-        <p>Клиент видит все записи, а не только последнюю.</p>
-      </div>
-      <div id="service-list" class="service-list"></div>
-    </section>
-  </main>
+  <div id="stats-modal" class="modal" hidden>
+    <div class="modal-card wide">
+      <button type="button" class="close" data-close="stats-modal">Закрыть</button>
+      <h2>Статистика пользователей</h2>
+      <div id="stats-summary" class="stats-grid"></div>
+      <canvas id="heatmap" width="980" height="520"></canvas>
+    </div>
+  </div>
 </body>
 </html>

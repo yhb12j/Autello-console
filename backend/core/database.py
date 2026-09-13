@@ -61,16 +61,15 @@ def as_json(value):
 
 
 def init_tables() -> None:
+    from models.admin import Admin
     from models.admin_setting import AdminSetting
     from models.application import Application
     from models.behavior_metric import BehaviorMetric
 
-    statements = (
-        Application.CREATE_SQL,
-        BehaviorMetric.CREATE_SQL,
-        AdminSetting.CREATE_SQL,
-    )
     with get_db() as conn:
         with conn.cursor() as cursor:
-            for statement in statements:
-                cursor.execute(statement)
+            cursor.execute(Application.CREATE_SQL)
+            cursor.execute(AdminSetting.CREATE_SQL)
+            cursor.execute(Admin.CREATE_SQL)
+            cursor.execute(BehaviorMetric.CREATE_SQL)
+            cursor.execute(BehaviorMetric.MIGRATE_SQL)
